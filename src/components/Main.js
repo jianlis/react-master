@@ -1,10 +1,18 @@
 import React from 'react';
 
 class SomeThing extends React.Component {
+  constructor(props) {
+    super(props);
+    //必须设置在state中
+    this.state = {
+      name: props.name || 'placeholder'
+    };
+
+}
   render() {
     return (
       <div>
-        我是子组件
+        {this.state.name}
       </div>
     );
   }
@@ -14,13 +22,10 @@ class AppComponent extends React.Component {
   render() {
     return (
       <div className="index">
-        <SomeThing></SomeThing>
+        <SomeThing name="我是子组件"></SomeThing>
       </div>
     );
   }
 }
-
-AppComponent.defaultProps = {
-};
 
 export default AppComponent;
