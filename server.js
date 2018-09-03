@@ -1,25 +1,36 @@
-var webpack = require('webpack');
-var WebpackDevServer = require('webpack-dev-server');
-var config = require('./webpack.config');
+/*eslint no-console:0 */
+'use strict';
+require('core-js/fn/object/assign');
+const webpack = require('webpack');
+const WebpackDevServer = require('webpack-dev-server');
+const config = require('./webpack.config');
+const open = require('open');
 
-//启动服务
-var server = new WebpackDevServer(webpack(config), {
-    publicPath: config.output.publicPath,
-	// 相当于通过本地node服务代理请求到了http://cnodejs.org/api
-    proxy: {
-	    "/api/*": {
-		    target: "https://cnodejs.org",
-		    secure: false
-	    }
-    },
-    stats: {
-        colors: true
-    },
+/**
+ * Flag indicating whether webpack compiled for the first time.
+ * @type {boolean}
+ */
+let isInitialCompilation = true;
+
+const compiler = webpack(config);
+
+new WebpackDevServer(compiler, config.devServer)
+.listen(config.port, 'localhost', (err) => {
+  if (err) {
+    console.log(err);
+  }
+  console.log('Listening at localhost:' + config.port);
 });
 
-//将其他路由，全部返回index.html
-server.app.get('*', function (req, res) {
-    res.sendFile(__dirname + '/index.html')
+compiler.plugin('done', () => {
+  if (isInitialCompilation) {
+    // Ensures that we log after webpack printed its stats (is there a better way?)
+    setTimeout(() => {
+      console.log('\n✓ The bundle is now ready for serving!\n');
+      console.log('  Open in iframe mode:\t\x1b[33m%s\x1b[0m',  'http://localhost:' + config.port + '/webpack-dev-server/');
+      console.log('  Open in inline mode:\t\x1b[33m%s\x1b[0m', 'http://localhost:' + config.port + '/\n');
+      console.log('  \x1b[33mHMR is active\x1b[0m. The bundle will automatically rebuild and live-update on changes.')
+    }, 350);
+  }
+  isInitialCompilation = false;
 });
-
-server.listen(3000);
